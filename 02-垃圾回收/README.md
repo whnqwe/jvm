@@ -20,6 +20,37 @@
 
 ## 常用配置
 
+#### 打印垃圾回收程序暂停的时间
+
+##### -XX:+PrintGCApplicationStoppedTime      
+
+#### 开启GC日志打印
+
+##### -XX:+PrintGC
+
+> 打印格式例如：
+> [Full GC 131115K->7482K(1015808K), 0.1633180 secs]
+
+#### 打印GC详细信息
+
+##### -XX:+PrintGCDetails 
+
+> 打印格式例如：
+>
+> [Full GC (System) [Tenured: 0K->2394K(466048K), 0.0624140 secs] 30822K->2394K(518464K), [Perm : 10443K->10443K(16384K)], 0.0625410 secs] [Times: user=0.05 sys=0.01, real=0.06 secs]
+
+#### 打印GC停顿耗时
+
+#####  -XX:+PrintGCTimeStamps     
+
+> 打印格式例如：
+>
+> 2.744: [Full GC (System) 2.744: [Tenured: 0K->2441K(466048K), 0.0598400 secs] 31754K->2441K(518464K), [Perm : 10717K->10717K(16384K)], 0.0599570 secs] [Times: user=0.06 sys=0.00, real=0.06secs]
+
+#### 设置GC输入的文件地址
+
+##### ​   -Xloggc:D:/apache-tomcat-7.0.56/logs/gc.log 
+
 #### 堆
 
 ##### -Xms
@@ -189,4 +220,222 @@
 
 
 > 新生代 + 老年代
+
+
+
+## 回收
+
+### 回收算法
+
+#### 标记-清除
+
+![](image/005.png)
+
+> 空间碎片
+
+#### 复制回收
+
+![](image/006.png)
+
+> 浪费空间
+>
+> 简单 高效
+
+#### 标记-整理
+
+![](image/007.png)
+
+> 没有空间碎片
+
+
+
+### 垃圾回收器
+
+
+
+![](image/008.png)
+
+![](image/009.png)
+
+#### serial
+
+![](image/010.png)
+
+##### 算法
+
+> 复制回收算法
+
+##### 特点
+
+###### 回收线程
+
+> 单线程
+
+
+
+#### ParNew
+
+![](image/011.png)
+
+##### 算法
+
+> 复制回收算法
+
+##### 特点
+
+###### 回收线程
+
+> 多线程
+
+###### 指定回收线程数
+
+-XX:ParallelGCThreads
+
+
+
+#### Paraller Scavenge（全局）
+
+吞吐量 = 运行用户代码时间 / （运行用户代码时间  + 垃圾收集时间）
+
+
+
+##### 算法
+
+> 复制回收算法
+
+##### 特点
+
+###### 吞吐量优先
+
+###### 垃圾回收器最长暂时时间
+
+> -XX:MaxGCPauseMillis=n
+>
+> > 指定垃圾回收时的最长暂停时间。<N>为毫秒.如果指定了此值的话，堆大小和垃圾回收相关参数会进行调整以达到指定值。设定此值可能会减少应用的吞吐量。
+
+###### 回收时间与非回收时间的比值
+
+> -XX:GCTimeRatio=n
+>
+> > 为垃圾回收时间与非垃圾回收时间的比值.公式为1:（1+N）。例如，-XX:GCTimeRatio=19时，表示5%的时间用于垃圾回收。默认情况为99，即1%的时间用于垃圾回收。
+>
+> > 适合吞吐量优先的垃圾收集器。默认值：1%
+
+###### 数据进行统计分析
+
+> -XX:+UseAdaptiveSizePolicy
+>
+> > 设置此选项后，**并行收集器**会对于收集时间、分配比例、收集之 后 堆的空闲空间等数据进行统计分析，然后以此为依据调整新生代和旧生代的大小以达到最佳效果。此值建议使用并行收集器时，一直打开。
+
+###### GC自适应的调节策略
+
+> Parallel Scavenge收集器有一个参数-`XX:+UseAdaptiveSizePolicy`。当这个参数打开之后，就不需要手工指定新生代的大小、Eden与Survivor区的比例、晋升老年代对象年龄等细节参数了，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量，这种调节方式称为GC自适应的调节策略（GC Ergonomics）。
+
+#### Serial Old
+
+![](image/010.png)
+
+##### 算法
+
+> 标记整理算法
+
+##### 特点
+
+###### 与任意搭配
+
+###### CMS备用方案
+
+> 作为CMS收集器的后备预案，在并发收集发生Concurrent Mode Failure时使用。
+>
+> 分配担保，失败后Concurrent Mode Failure，会出发FULL GC, 此时老年代使用的就是serial old回收器
+
+#### Parallel Old
+
+![](image/011.png)
+
+##### 算法
+
+> 标记整理算法
+
+##### 特点
+
+###### 应用场景
+
+> 在注重吞吐量以及CPU资源敏感的场合，都可以优先考虑Parallel Scavenge加Parallel Old收集器。
+
+###### 历史
+
+> 这个收集器是在JDK 1.6中才开始提供的，在此之前，新生代的Parallel Scavenge收集器一直处于比较尴尬的状态。原因是，如果新生代选择了Parallel Scavenge收集器，老年代除了Serial Old收集器外别无选择（Parallel Scavenge收集器无法与CMS收集器配合工作）。由于老年代Serial Old收集器在服务端应用性能上的“拖累”，使用了Parallel Scavenge收集器也未必能在整体应用上获得吞吐量最大化的效果，由于单线程的老年代收集中无法充分利用服务器多CPU的处理能力，在老年代很大而且硬件比较高级的环境中，这种组合的吞吐量甚至还不一定有ParNew加CMS的组合“给力”。直到Parallel Old收集器出现后，“吞吐量优先”收集器终于有了比较名副其实的应用组合。
+
+#### CMS
+
+![](image/012.png)
+
+##### 算法
+
+> 标记清除算法
+
+##### 特点
+
+###### 并发收集
+
+###### 减少回收停顿时间
+
+###### 触发的标准及技巧
+
+> -XX：CMSInitiatingOccupancyFraction
+>
+> https://blog.csdn.net/rodesad/article/details/51544977
+>
+> 说明老年代到百分之多少满的时候开始执行对老年代的并发垃圾回收（CMS）
+>
+> 这个参数设置有很大技巧，基本上满足公式：
+> (Xmx-Xmn)*(100-CMSInitiatingOccupancyFraction)/100>=Xmn
+> 时就不会出现promotion failed。在我的应用中Xmx是6000，Xmn是500，那么Xmx-Xmn是5500兆，也就是老年代有5500兆，CMSInitiatingOccupancyFraction=90说明老年代到90%满的时候开始执行对老年代的并发垃圾回收（CMS），这时还剩10%的空间是5500*10%=550兆，所以即使Xmn（也就是年轻代共500兆）里所有对象都搬到老年代里，550兆的空间也足够了，所以只要满足上面的公式，就不会出现垃圾回收时的promotion failed；如果按照Xmx=2048,Xmn=768的比例计算，则CMSInitiatingOccupancyFraction的值不能超过40，否则就容易出现垃圾回收时的promotion failed。
+>
+> jdk1.5配合并发垃圾收集器。默认是68%。
+>
+> JDK 1.6 默认是92%。（太高，建议修改为80%）。
+
+###### 打开压缩
+
+-XX:+UseCMSCompactAtFullCollection
+
+> 打开对老年代的压缩。可能会影响性能，但是可以消除碎片,在FULL GC的时候，压缩内存， CMS是不会移动内存的，因此，这个非常容易产生碎片，导致内存不够用，因此，内存的压缩这个时候就会被启用。增加这个参数是个好习惯。
+
+###### 指定几次full GC压缩
+
+-XX:CMSFullGCsBeforeCompaction
+
+> -XX:CMSFullGCsBeforeCompaction=10
+>
+> 	由于并发收集器不对内存空间进行压缩、整理，所以运行一段时间以后会产生“碎片”，使得运行效率降低。此值设置运行多少次GC以后对内存空间进行压缩、整理。发生多少次CMS Full GC，这个参数最好不要设置，因为要做compaction的话，也就是真正的Full GC是串行的，非常慢，让它自己去决定什么时候需要做compaction。
+
+###### 指定使用CMS
+
+-XX:+UseConcMarkSweep
+
+> 指定在老年代使用 concurrent cmark sweep gc。gc thread和 app thread并行 (在 init-mark和 remark时 pause app thread)。app pause时间较短 ,适合交互性强的系统 ,如 web server。它可以并发执行收集操作，降低应用停止时间，同时它也是并行处理模式，可以有效地利用多处理器的系统的多进程处理。新生代默认使用：parnew
+
+
+
+##### 4大步骤
+
+###### 初始标记（CMS initial mark）
+
+> 初始标记仅仅只是标记一下GC Roots能直接关联到的对象，速度很快，需要“Stop The World”。
+
+###### 并发标记（CMS concurrent mark）
+
+> 并发标记阶段就是进行GC Roots Tracing的过程。
+
+###### 重新标记（CMS remark）
+
+> 重新标记阶段是为了修正并发标记期间因用户程序继续运作而导致标记产生变动的那一部分对象的标记记录，这个阶段的停顿时间一般会比初始标记阶段稍长一些，但远比并发标记的时间短，仍然需要“Stop The World”。
+
+###### 并发清除（CMS concurrent sweep）
+
+> 并发清除阶段会清除对象。
+
+
 
