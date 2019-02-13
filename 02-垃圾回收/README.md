@@ -47,9 +47,27 @@
 >
 > 2.744: [Full GC (System) 2.744: [Tenured: 0K->2441K(466048K), 0.0598400 secs] 31754K->2441K(518464K), [Perm : 10717K->10717K(16384K)], 0.0599570 secs] [Times: user=0.06 sys=0.00, real=0.06secs]
 
-#### 设置GC输入的文件地址
+#### 设置GC日志输入的文件地址
 
-##### ​   -Xloggc:D:/apache-tomcat-7.0.56/logs/gc.log 
+##### ​   -Xloggc:D:/logs/gc.log 
+
+#### GC日志分块
+
+##### -XX:GCLogFileSize
+
+> -XX:GCLogFileSize=5M
+
+#### 开启GC日志循环，必须有-Xloggc参数
+
+##### -XX:-UseGCLogFileRotation
+
+#### 设置滚动日志文件的个数
+
+##### -XX:NumberOfGCLogFiles
+
+> 设置滚动日志文件的个数，必须大于1
+>
+> 日志文件命名策略是，<filename>.0, <filename>.1, ..., <filename>.n-1，其中n是该参数的值
 
 #### 堆
 
