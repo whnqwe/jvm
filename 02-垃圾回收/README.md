@@ -69,6 +69,22 @@
 >
 > 日志文件命名策略是，<filename>.0, <filename>.1, ..., <filename>.n-1，其中n是该参数的值
 
+#### 当抛出OOM时进行HeapDump
+
+##### -XX:+HeapDumpOnOutOfMemoryError
+
+#### 指定HeapDump的文件路径或目录
+
+##### -XX:HeapDumpPath=/home/heap.hprof
+
+#### 打印JVM所有参数
+
+#####  -XX:+PrintFlagsFinal
+
+#### 打印当前JVM设置的参数
+
+##### -XX:+PrintCommandLineFlags
+
 #### 堆
 
 ##### -Xms
