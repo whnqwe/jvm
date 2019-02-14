@@ -47,6 +47,10 @@
 >
 > 2.744: [Full GC (System) 2.744: [Tenured: 0K->2441K(466048K), 0.0598400 secs] 31754K->2441K(518464K), [Perm : 10717K->10717K(16384K)], 0.0599570 secs] [Times: user=0.06 sys=0.00, real=0.06secs]
 
+#### 打印GC发生的当前时间
+
+##### -XX:+PrintGCDateStamps
+
 #### 设置GC日志输入的文件地址
 
 ##### ​   -Xloggc:D:/logs/gc.log 
@@ -451,7 +455,13 @@
 
 > 指定在老年代使用 concurrent cmark sweep gc。gc thread和 app thread并行 (在 init-mark和 remark时 pause app thread)。app pause时间较短 ,适合交互性强的系统 ,如 web server。它可以并发执行收集操作，降低应用停止时间，同时它也是并行处理模式，可以有效地利用多处理器的系统的多进程处理。新生代默认使用：parnew
 
+###### 可中断的并发预清理
 
+> -XX:CMSMaxAbortablePrecleanTime=5000
+
+###### 强制进行预清理(Minor GC)
+
+> -XX:+CMSScavengeBeforeRemark
 
 ##### 4大步骤
 
