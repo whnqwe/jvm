@@ -100,6 +100,14 @@
 
 > 可视化堆栈情况
 
+##### jinfo
+
+>  Java System属性和JVM命令行参数
+>
+> jinfo -sysprops pid  [Java System属性]
+>
+> jinfo -flags pid [JVM命令行参数]
+
 
 
 ### MAT
