@@ -413,13 +413,21 @@
 
 > 标记清除算法
 
+##### 减少停顿时间的手段
+
+###### 应用程序与GC线程并发
+
+###### 增加可中断的并发预清理阶段
+
+###### 引入卡表
+
 ##### 特点
 
 ###### 并发收集
 
 ###### 减少回收停顿时间
 
-###### 触发的标准及技巧
+###### 老年百分之多少触发CMS
 
 > -XX：CMSInitiatingOccupancyFraction
 >
@@ -459,7 +467,7 @@
 
 > -XX:CMSMaxAbortablePrecleanTime=5000
 
-###### 强制进行预清理(Minor GC)
+###### CMS前强制Minor GC
 
 > -XX:+CMSScavengeBeforeRemark
 
